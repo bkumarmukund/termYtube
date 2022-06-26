@@ -9,7 +9,7 @@ query = sys.argv
 
 
 #os.system('notify-send ' +query)
-DEVELOPER_KEY            = "AIzaSyB-Og15ck9oUiAbGUyq169UmO8fwpm-XMg"
+DEVELOPER_KEY            = "#Paste Your api Key HERE"
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION      = "v3"
 YOUTUBE_VIDEO_URL_PREFIX = "https://www.youtube.com/watch?v="
