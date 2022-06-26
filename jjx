@@ -1,0 +1,93 @@
+#!/bin/bash
+
+clear
+cd /home/runnur/jj
+source /home/runnur/.pyenv/youtube/bin/activate
+query=''
+
+printf search:
+read -r query
+python3 ytapi_search.py "$query" 
+
+while [ "$query" != 'q' ]
+do
+    clear
+    cat ytsresult.txt |nl | cut -c1-95 
+    echo ''  
+    printf choice: 
+    read -r query
+
+    first="${query:0:1}"
+    if [[ $first = '/' ]]
+    then
+	python3 ytapi_search.py "${query:1}"
+	continue
+    fi	
+
+    #handling query 
+    vid=$(echo "$query" | tr -dc '0-9')
+    vti=$(sed "${vid}q;d" ytstitle.txt)
+    vid=$(sed "${vid}q;d" ytsid.txt)
+    url="https://www.youtube.com/watch?v=${vid}"
+
+    #default playback video setting 360p
+    if [[ $query =~ ^[0-9]+$ ]]
+    then
+        notify-send "playing $vti"
+	    mpv --no-terminal --ytdl-format=134+worstaudio "$url" & 
+
+    #video playback setting 240p
+    elif [[ $query =~ "l"  ]]
+    then
+        notify-send "playing_240p: $vti"
+	    mpv --no-terminal --ytdl-format=133+worstaudio "$url" &  
+
+    #video playback setting 720p
+    elif [[ $query =~ "h"  ]]
+    then
+        notify-send "playing_720p: $vti"
+	    mpv --no-terminal --ytdl-format=136+worstaudio "$url" &  
+    
+    #default audio playback setting
+    elif [[ $query =~ "a"  ]]
+    then
+    	mpv --volume=70 --ytdl-format=bestaudio "$url" 
+    #for downloading 
+    #audio
+    elif [[ $query =~ "m"  ]]
+    then
+        xterm -e "youtube-dl -x -o \"d/m/%(title)s.%(ext)s'\" \"$url\"" && notify-send "download complete" |tee &
+    #video
+    elif [[ $query =~ "d"  ]]
+    then
+        echo "1.240"
+        echo "2.360"
+        echo "3.720"
+
+        echo -n "Enter resolution: "
+        read res
+
+        case $res in
+
+        1)
+            xterm -e "youtube-dl -f 133+worstaudio -o \"d/%(title)s.%(ext)s'\" \"$url\"" && notify-send "completed 240p download" |tee &
+                ;;
+        2)
+            xterm -e "youtube-dl -f 134+worstaudio -o \"d/%(title)s.%(ext)s'\" \"$url\"" && notify-send "completed 360p download" |tee &
+                ;;
+        3)
+            xterm -e "youtube-dl -f 136+worstaudio  -o \"d/%(title)s.%(ext)s'\" \"$url\"" && notify-send "completed 720p download" |tee &
+                ;;
+        *)
+            notify-send "no resolution found"
+               ;;
+        esac
+
+    else
+    continue
+    fi
+done
+
+clear
+deactivate
+exit
